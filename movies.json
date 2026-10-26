@@ -1,0 +1,294 @@
+[
+  {
+    "titulo": "Coração Valente",
+    "aliases": [
+      "Braveheart"
+    ]
+  },
+  {
+    "titulo": "O Último dos Moicanos",
+    "aliases": [
+      "The Last of the Mohicans",
+      "Ultimo dos Moicanos"
+    ]
+  },
+  {
+    "titulo": "O Senhor dos Anéis: A Sociedade do Anel",
+    "aliases": [
+      "The Lord of the Rings: The Fellowship of the Ring",
+      "Senhor dos Aneis A Sociedade do Anel"
+    ]
+  },
+  {
+    "titulo": "O Senhor dos Anéis: As Duas Torres",
+    "aliases": [
+      "The Two Towers",
+      "Senhor dos Aneis As Duas Torres"
+    ]
+  },
+  {
+    "titulo": "O Senhor dos Anéis: O Retorno do Rei",
+    "aliases": [
+      "The Return of the King",
+      "Senhor dos Aneis O Retorno do Rei"
+    ]
+  },
+  {
+    "titulo": "O Hobbit: Uma Jornada Inesperada",
+    "aliases": [
+      "The Hobbit: An Unexpected Journey"
+    ]
+  },
+  {
+    "titulo": "Harry Potter e a Pedra Filosofal",
+    "aliases": [
+      "Harry Potter and the Sorcerer's Stone",
+      "Harry Potter e a Pedra Filosofal"
+    ]
+  },
+  {
+    "titulo": "Harry Potter e a Câmara Secreta",
+    "aliases": [
+      "Harry Potter and the Chamber of Secrets"
+    ]
+  },
+  {
+    "titulo": "Harry Potter e o Prisioneiro de Azkaban",
+    "aliases": [
+      "Harry Potter and the Prisoner of Azkaban"
+    ]
+  },
+  {
+    "titulo": "Harry Potter e o Cálice de Fogo",
+    "aliases": [
+      "Harry Potter and the Goblet of Fire"
+    ]
+  },
+  {
+    "titulo": "Harry Potter e a Ordem da Fênix",
+    "aliases": [
+      "Harry Potter and the Order of the Phoenix"
+    ]
+  },
+  {
+    "titulo": "Harry Potter e o Enigma do Príncipe",
+    "aliases": [
+      "Harry Potter and the Half-Blood Prince"
+    ]
+  },
+  {
+    "titulo": "Harry Potter e as Relíquias da Morte - Parte 1",
+    "aliases": [
+      "Harry Potter and the Deathly Hallows Part 1"
+    ]
+  },
+  {
+    "titulo": "Harry Potter e as Relíquias da Morte - Parte 2",
+    "aliases": [
+      "Harry Potter and the Deathly Hallows Part 2"
+    ]
+  },
+  {
+    "titulo": "Star Wars: Episódio I - A Ameaça Fantasma",
+    "aliases": [
+      "Star Wars Episode I The Phantom Menace"
+    ]
+  },
+  {
+    "titulo": "Star Wars: Episódio II - Ataque dos Clones",
+    "aliases": [
+      "Star Wars Episode II Attack of the Clones"
+    ]
+  },
+  {
+    "titulo": "Star Wars: Episódio III - A Vingança dos Sith",
+    "aliases": [
+      "Star Wars Episode III Revenge of the Sith"
+    ]
+  },
+  {
+    "titulo": "Star Wars: Episódio IV - Uma Nova Esperança",
+    "aliases": [
+      "Star Wars A New Hope",
+      "Guerra nas Estrelas"
+    ]
+  },
+  {
+    "titulo": "Star Wars: Episódio V - O Império Contra-Ataca",
+    "aliases": [
+      "The Empire Strikes Back"
+    ]
+  },
+  {
+    "titulo": "Star Wars: Episódio VI - O Retorno de Jedi",
+    "aliases": [
+      "Return of the Jedi"
+    ]
+  },
+  {
+    "titulo": "Jurassic Park - O Parque dos Dinossauros",
+    "aliases": [
+      "Jurassic Park",
+      "Parque dos Dinossauros"
+    ]
+  },
+  {
+    "titulo": "O Mundo Perdido: Jurassic Park",
+    "aliases": [
+      "The Lost World Jurassic Park"
+    ]
+  },
+  {
+    "titulo": "Matrix",
+    "aliases": [
+      "The Matrix"
+    ]
+  },
+  {
+    "titulo": "Gladiador",
+    "aliases": [
+      "Gladiator"
+    ]
+  },
+  {
+    "titulo": "Titanic",
+    "aliases": []
+  },
+  {
+    "titulo": "De Volta para o Futuro",
+    "aliases": [
+      "Back to the Future"
+    ]
+  },
+  {
+    "titulo": "O Rei Leão",
+    "aliases": [
+      "The Lion King"
+    ]
+  },
+  {
+    "titulo": "Toy Story - Um Mundo de Aventuras",
+    "aliases": [
+      "Toy Story"
+    ]
+  },
+  {
+    "titulo": "Shrek",
+    "aliases": []
+  },
+  {
+    "titulo": "Piratas do Caribe: A Maldição do Pérola Negra",
+    "aliases": [
+      "Pirates of the Caribbean The Curse of the Black Pearl"
+    ]
+  },
+  {
+    "titulo": "Homem-Aranha 2",
+    "aliases": [
+      "Spider-Man 2"
+    ]
+  },
+  {
+    "titulo": "Batman: O Cavaleiro das Trevas",
+    "aliases": [
+      "The Dark Knight"
+    ]
+  },
+  {
+    "titulo": "Indiana Jones e os Caçadores da Arca Perdida",
+    "aliases": [
+      "Raiders of the Lost Ark",
+      "Indiana Jones"
+    ]
+  },
+  {
+    "titulo": "Os Caça-Fantasmas",
+    "aliases": [
+      "Ghostbusters"
+    ]
+  },
+  {
+    "titulo": "O Exterminador do Futuro 2: O Julgamento Final",
+    "aliases": [
+      "Terminator 2"
+    ]
+  },
+  {
+    "titulo": "Velozes e Furiosos",
+    "aliases": [
+      "The Fast and the Furious"
+    ]
+  },
+  {
+    "titulo": "Clube da Luta",
+    "aliases": [
+      "Fight Club"
+    ]
+  },
+  {
+    "titulo": "Pulp Fiction: Tempo de Violência",
+    "aliases": [
+      "Pulp Fiction"
+    ]
+  },
+  {
+    "titulo": "O Poderoso Chefão",
+    "aliases": [
+      "The Godfather"
+    ]
+  },
+  {
+    "titulo": "Forrest Gump: O Contador de Histórias",
+    "aliases": [
+      "Forrest Gump"
+    ]
+  },
+  {
+    "titulo": "Esqueceram de Mim",
+    "aliases": [
+      "Home Alone"
+    ]
+  },
+  {
+    "titulo": "Monstros S.A.",
+    "aliases": [
+      "Monsters Inc"
+    ]
+  },
+  {
+    "titulo": "Procurando Nemo",
+    "aliases": [
+      "Finding Nemo"
+    ]
+  },
+  {
+    "titulo": "O Sexto Sentido",
+    "aliases": [
+      "The Sixth Sense"
+    ]
+  },
+  {
+    "titulo": "Ace Ventura: Um Detetive Diferente",
+    "aliases": [
+      "Ace Ventura Pet Detective"
+    ]
+  },
+  {
+    "titulo": "A Máscara",
+    "aliases": [
+      "The Mask"
+    ]
+  },
+  {
+    "titulo": "MIB - Homens de Preto",
+    "aliases": [
+      "Men in Black"
+    ]
+  },
+  {
+    "titulo": "Independence Day",
+    "aliases": [
+      "Independence Day - Dia da Independência"
+    ]
+  }
+]

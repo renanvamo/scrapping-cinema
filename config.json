@@ -1,0 +1,14 @@
+{
+  "ntfy": {
+    "server": "https://ntfy.sh",
+    "topic": "COLOQUE-SEU-TOPICO-AQUI",
+    "token": ""
+  },
+  "ingresso": {
+    "city_id": 1,
+    "days_ahead": 30,
+    "pause_seconds": 1.0
+  },
+  "match_threshold": 0.88,
+  "only_chains": []
+}

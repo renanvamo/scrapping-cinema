@@ -1,0 +1,8 @@
+# Segredos e arquivos locais (não vão para o GitHub)
+config.local.json
+estado.json
+estado.sqlite
+ultimo_resultado.txt
+pagina.html
+__pycache__/
+*.pyc
