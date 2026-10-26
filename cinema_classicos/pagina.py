@@ -45,6 +45,12 @@ TEMPLATE = r"""<!doctype html>
   .bad { color:#c0392b; } .warn { color:#b9770e; } .good { color:#2e8b57; }
   details summary { cursor:pointer; color:var(--accent); }
   details ul { margin:6px 0 0; padding-left:18px; color:var(--mute); }
+  .tokenbox { display:none; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:16px; font-size:.9rem; }
+  .tokenbox.on { display:block; }
+  .tokenbox ol { margin:8px 0; padding-left:20px; } .tokenbox li { margin:3px 0; }
+  .tokenbox input { width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); font:inherit; margin:6px 0 8px; }
+  .tokenbox code { background:var(--chip); padding:1px 5px; border-radius:4px; }
+  a.btn { font:inherit; padding:9px 16px; border-radius:8px; border:1px solid var(--line); color:var(--ink); text-decoration:none; background:var(--card); }
   .vazio { text-align:center; color:var(--mute); padding:48px 0; }
   @media (max-width:520px){ .dia{flex-direction:column; gap:2px} .dia .d{min-width:0} }
 </style>
@@ -56,6 +62,21 @@ TEMPLATE = r"""<!doctype html>
   <div class="barra" id="barra">
     <button class="prim" id="bBuscar">🔎 Buscar agora</button>
     <button id="bTestar">🧪 Testar busca</button>
+    <a class="btn" id="aExec" target="_blank" rel="noopener" style="display:none">📋 Ver execuções</a>
+    <button id="bToken" style="display:none" title="Trocar ou remover o token">🔑</button>
+  </div>
+  <div class="tokenbox" id="tokenBox">
+    <strong>Conectar ao GitHub (uma vez só)</strong>
+    <ol>
+      <li>Abra <a id="aTok" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a>.</li>
+      <li>Em <em>Repository access</em>, escolha <em>Only select repositories</em> e marque só este repositório.</li>
+      <li>Em <em>Permissions → Repository permissions</em>, deixe <code>Actions</code> em <em>Read and write</em>.</li>
+      <li>Gere o token, copie e cole abaixo. Ele fica salvo só neste navegador.</li>
+    </ol>
+    <input id="tokInput" type="password" placeholder="github_pat_…" autocomplete="off">
+    <button class="prim" id="tokSalvar">Salvar e continuar</button>
+    <button id="tokRemover">Remover token</button>
+    <button id="tokFechar">Fechar</button>
   </div>
   <div class="painel" id="painel">
     <h2 id="pTitulo">Log</h2>
@@ -156,6 +177,83 @@ if (modoServidor) {
   $("bBuscar").onclick = () => iniciar("buscar");
   $("bTestar").onclick = () => iniciar("testar");
   api("/api/status").then(st => { if (st.rodando) { atualizarStatus(); poll = setInterval(atualizarStatus, 1000); } }).catch(() => {});
+}
+
+// --- Botões na versão publicada (GitHub Pages): disparam o workflow pela API do GitHub ---
+const naNuvem = location.hostname.endsWith(".github.io");
+const GH = {dono: location.hostname.split(".")[0], repo: location.pathname.split("/")[1] || "", wf: "buscar.yml", ref: "master"};
+const tok = {
+  get() { try { return localStorage.getItem("gh_token_cinema") || ""; } catch (e) { return ""; } },
+  set(v) { try { localStorage.setItem("gh_token_cinema", v); } catch (e) {} },
+  del() { try { localStorage.removeItem("gh_token_cinema"); } catch (e) {} },
+};
+const ghBase = `https://api.github.com/repos/${GH.dono}/${GH.repo}`;
+const ghHead = () => ({"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28", ...(tok.get() ? {"Authorization": "Bearer " + tok.get()} : {})});
+const execUrl = `https://github.com/${GH.dono}/${GH.repo}/actions/workflows/${GH.wf}`;
+let modoPendente = null;
+const painelNuvem = (titulo, linhas) => {
+  $("painel").classList.add("on"); $("pTitulo").textContent = titulo; $("log").textContent = linhas.join("\n"); $("tabela").innerHTML = "";
+};
+async function dispararNuvem(modo) {
+  if (!tok.get()) { modoPendente = modo; $("tokenBox").classList.add("on"); $("tokInput").focus(); return; }
+  $("bBuscar").disabled = $("bTestar").disabled = true;
+  const t0 = Date.now();
+  const nome = modo === "testar" ? "Teste da busca" : "Busca";
+  painelNuvem(nome + " — enviando pedido ao GitHub…", []);
+  try {
+    const r = await fetch(`${ghBase}/actions/workflows/${GH.wf}/dispatches`, {
+      method: "POST", headers: {...ghHead(), "Content-Type": "application/json"},
+      body: JSON.stringify({ref: GH.ref, inputs: {modo}}),
+    });
+    if (r.status !== 204) {
+      const msg = r.status === 401 ? "Token inválido ou expirado." :
+        (r.status === 403 || r.status === 404) ? "O token não tem permissão (precisa de Actions: Read and write neste repositório)." : `Erro HTTP ${r.status}.`;
+      painelNuvem(nome + " — não foi possível iniciar", [msg, "Clique em 🔑 para trocar o token."]);
+      $("bBuscar").disabled = $("bTestar").disabled = false;
+      return;
+    }
+  } catch (e) {
+    painelNuvem(nome + " — falha de rede", [String(e)]); $("bBuscar").disabled = $("bTestar").disabled = false; return;
+  }
+  const linhas = ["Pedido enviado. Aguardando o GitHub iniciar a execução…"];
+  painelNuvem(nome + " — em andamento…", linhas);
+  for (let i = 0; i < 180; i++) {            // até ~18 min
+    await new Promise(ok => setTimeout(ok, 6000));
+    let run = null;
+    try {
+      const r = await fetch(`${ghBase}/actions/workflows/${GH.wf}/runs?event=workflow_dispatch&per_page=5`, {headers: ghHead()});
+      const j = await r.json();
+      run = (j.workflow_runs || []).find(x => new Date(x.created_at).getTime() >= t0 - 120000);
+    } catch (e) { continue; }
+    if (!run) continue;
+    const st = {queued: "na fila", in_progress: "rodando", completed: "concluída", waiting: "aguardando"}[run.status] || run.status;
+    painelNuvem(nome + " — " + (run.status === "completed" ? "concluída" : "em andamento…"),
+      [`Execução ${st}.`, `Log completo: ${run.html_url}`]);
+    if (run.status === "completed") {
+      const ok = run.conclusion === "success";
+      const fim = [ok ? "✓ Execução concluída com sucesso." : `✗ Execução terminou com: ${run.conclusion}.`, `Log completo (cada cinema, salas, sessões): ${run.html_url}`];
+      if (ok && modo === "buscar") { fim.push("A página será recarregada em 60 s (o GitHub leva um pouco para publicar)."); setTimeout(() => location.reload(), 60000); }
+      painelNuvem(nome + (ok ? " — concluída" : " — falhou"), fim);
+      break;
+    }
+  }
+  $("bBuscar").disabled = $("bTestar").disabled = false;
+}
+if (naNuvem) {
+  $("barra").classList.add("on");
+  $("aExec").style.display = ""; $("aExec").href = execUrl;
+  $("bToken").style.display = "";
+  $("aTok").href = "https://github.com/settings/personal-access-tokens/new";
+  $("bBuscar").onclick = () => dispararNuvem("buscar");
+  $("bTestar").onclick = () => dispararNuvem("testar");
+  $("bToken").onclick = () => $("tokenBox").classList.toggle("on");
+  $("tokFechar").onclick = () => { modoPendente = null; $("tokenBox").classList.remove("on"); };
+  $("tokRemover").onclick = () => { tok.del(); $("tokInput").value = ""; };
+  $("tokSalvar").onclick = () => {
+    const v = $("tokInput").value.trim(); if (!v) return;
+    tok.set(v); $("tokInput").value = ""; $("tokenBox").classList.remove("on");
+    if (modoPendente) { const m = modoPendente; modoPendente = null; dispararNuvem(m); }
+  };
 }
 render();
 </script>
