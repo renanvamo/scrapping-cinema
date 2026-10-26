@@ -53,8 +53,16 @@ jobs:
           git add -A docs dados
           if git diff --cached --quiet; then
             echo "Sem mudanças para publicar."
-          else
-            git commit -m "Atualiza programação"
-            git pull --rebase
-            git push
+            exit 0
           fi
+          git commit -m "Atualiza programação"
+          for i in 1 2 3; do
+            if git pull --rebase -X theirs && git push; then
+              echo "Publicado."
+              exit 0
+            fi
+            git rebase --abort 2>/dev/null || true
+            sleep 5
+          done
+          echo "Não consegui publicar após 3 tentativas."
+          exit 1
