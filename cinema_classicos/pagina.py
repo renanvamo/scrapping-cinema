@@ -38,7 +38,11 @@ TEMPLATE = r"""<!doctype html>
   .painel { display:none; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:20px; }
   .painel.on { display:block; }
   .painel h2 { font-size:1rem; margin:0 0 8px; }
-  #log { margin:0; max-height:260px; overflow:auto; font:12.5px/1.5 ui-monospace, Consolas, monospace; white-space:pre-wrap; color:var(--mute); }
+  .pcab { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .pcab h2 { flex:1; margin:0; }
+  .pcab button { padding:5px 10px; font-size:.85rem; }
+  #log { display:block; width:100%; height:300px; resize:vertical; padding:10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); font:12.5px/1.5 ui-monospace, Consolas, monospace; white-space:pre-wrap; overflow:auto; }
+  pre.bruto { max-height:220px; overflow:auto; margin:6px 0 0; padding:8px; background:var(--bg); border:1px solid var(--line); border-radius:6px; font:11.5px/1.4 ui-monospace, Consolas, monospace; white-space:pre-wrap; color:var(--mute); }
   table.t { width:100%; border-collapse:collapse; font-size:.85rem; margin-top:12px; }
   table.t th, table.t td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
   table.t td.n { text-align:right; font-variant-numeric:tabular-nums; }
@@ -79,8 +83,12 @@ TEMPLATE = r"""<!doctype html>
     <button id="tokFechar">Fechar</button>
   </div>
   <div class="painel" id="painel">
-    <h2 id="pTitulo">Log</h2>
-    <pre id="log"></pre>
+    <div class="pcab">
+      <h2 id="pTitulo">Log</h2>
+      <button id="pCopiar" title="Copiar o log">📋 Copiar</button>
+      <button id="pFechar" title="Fechar">✕ Fechar</button>
+    </div>
+    <textarea id="log" readonly spellcheck="false"></textarea>
     <div id="tabela"></div>
   </div>
   <div class="filtros">
@@ -135,6 +143,14 @@ $("cinema").addEventListener("change", render);
 
 // --- Botões (só funcionam quando a página é aberta pelo servidor local) ---
 const modoServidor = ["localhost", "127.0.0.1"].includes(location.hostname);
+let fechado = false;
+$("pFechar").onclick = () => { fechado = true; $("painel").classList.remove("on"); };
+$("pCopiar").onclick = async () => {
+  const t = $("log").value, b = $("pCopiar");
+  try { await navigator.clipboard.writeText(t); }
+  catch (e) { $("log").select(); document.execCommand("copy"); }
+  b.textContent = "✓ Copiado"; setTimeout(() => b.textContent = "📋 Copiar", 1500);
+};
 let poll = null;
 async function api(caminho, metodo) {
   const r = await fetch(caminho, {method: metodo || "GET", headers: {"X-Cinema": "1"}});
@@ -146,16 +162,17 @@ function mostrarTabela(res) {
     const cls = !c.ok ? "bad" : (!c.sessoes ? "warn" : "good");
     const st = !c.ok ? `✗ ${esc(c.erro)}` : (!c.sessoes ? "⚠ sem sessões" : "✓");
     const lista = c.filmes.length ? `<details><summary>${c.filmes.length} filmes</summary><ul>${c.filmes.map(f => `<li>${esc(f)}</li>`).join("")}</ul></details>` : "—";
-    return `<tr><td>${esc(c.cinema)}</td><td class="${cls}">${st}</td><td class="n">${c.salas}</td><td>${lista}</td><td class="n">${c.sessoes}</td><td>${esc(c.de)}${c.ate ? " → " + esc(c.ate) : ""}</td><td class="n">${c.classicos}</td></tr>`;
+    const cru = c.bruto ? `<details><summary>ver</summary><pre class="bruto">${esc(c.bruto)}${c.bruto.length >= 4000 ? "\n… (cortado)" : ""}</pre></details>` : "—";
+    return `<tr><td>${esc(c.cinema)}</td><td class="${cls}">${st}</td><td class="n">${c.salas}</td><td>${lista}</td><td>${cru}</td><td class="n">${c.sessoes}</td><td>${esc(c.de)}${c.ate ? " → " + esc(c.ate) : ""}</td><td class="n">${c.classicos}</td></tr>`;
   }).join("");
-  $("tabela").innerHTML = `<table class="t"><thead><tr><th>Cinema</th><th>Status</th><th>Salas</th><th>Filmes</th><th>Sessões</th><th>Período</th><th>Clássicos</th></tr></thead><tbody>${linhas}</tbody></table>`;
+  $("tabela").innerHTML = `<table class="t"><thead><tr><th>Cinema</th><th>Status</th><th>Salas</th><th>Filmes</th><th>Resposta crua</th><th>Sessões</th><th>Período</th><th>Clássicos</th></tr></thead><tbody>${linhas}</tbody></table>`;
 }
 async function atualizarStatus() {
   const st = await api("/api/status");
-  $("painel").classList.add("on");
+  if (!fechado) $("painel").classList.add("on");
   $("pTitulo").textContent = (st.modo === "testar" ? "Teste da busca" : "Busca") + (st.rodando ? " — em andamento…" : " — concluída");
   const lg = $("log"), fim = lg.scrollTop + lg.clientHeight >= lg.scrollHeight - 20;
-  lg.textContent = st.linhas.join("\n");
+  lg.value = st.linhas.join("\n");
   if (fim) lg.scrollTop = lg.scrollHeight;
   $("bBuscar").disabled = $("bTestar").disabled = st.rodando;
   if (!st.rodando) {
@@ -166,6 +183,7 @@ async function atualizarStatus() {
   return st;
 }
 async function iniciar(modo) {
+  fechado = false;
   $("tabela").innerHTML = "";
   const r = await api("/api/" + modo, "POST");
   if (!r.iniciado) alert("Já existe uma busca em andamento.");
@@ -192,9 +210,10 @@ const ghHead = () => ({"Accept": "application/vnd.github+json", "X-GitHub-Api-Ve
 const execUrl = `https://github.com/${GH.dono}/${GH.repo}/actions/workflows/${GH.wf}`;
 let modoPendente = null;
 const painelNuvem = (titulo, linhas) => {
-  $("painel").classList.add("on"); $("pTitulo").textContent = titulo; $("log").textContent = linhas.join("\n"); $("tabela").innerHTML = "";
+  if (!fechado) $("painel").classList.add("on"); $("pTitulo").textContent = titulo; $("log").value = linhas.join("\n"); $("tabela").innerHTML = "";
 };
 async function dispararNuvem(modo) {
+  fechado = false;
   if (!tok.get()) { modoPendente = modo; $("tokenBox").classList.add("on"); $("tokInput").focus(); return; }
   $("bBuscar").disabled = $("bTestar").disabled = true;
   const t0 = Date.now();

@@ -4,6 +4,7 @@ Cobre Cinemark, Cinépolis, UCI, Kinoplex etc. na cidade de São Paulo.
 Os endpoints abaixo são os usados pelo site/app e podem mudar. Se algo quebrar,
 rode `python -m cinema_classicos --diagnostico` para ver a resposta crua.
 """
+import json
 import time
 import requests
 
@@ -30,11 +31,12 @@ def cinemas(city_id: int):
     return data if isinstance(data, list) else data.get("items", [])
 
 
-def coletar(cfg: dict, progresso=None) -> list:
+def coletar(cfg: dict, progresso=None, bruto: bool = False) -> list:
     """Retorna sessões normalizadas (cinema, titulo, inicio, link, formato, sala).
 
     `progresso`, se dado, é chamado após cada cinema com um dict-relatório:
-    {id, cinema, ok, erro, sessoes, salas, filmes, de, ate}.
+    {id, cinema, ok, erro, sessoes, salas, filmes, pares, de, ate, bruto}.
+    Com bruto=True, guarda um trecho da resposta crua da fonte (para diagnóstico).
     """
     city = cfg["city_id"]
     pausa = cfg.get("pause_seconds", 1.0)
@@ -46,6 +48,8 @@ def coletar(cfg: dict, progresso=None) -> list:
         sessoes = []
         try:
             blocos = _get(f"/sessions/city/{city}/theater/{tid}")
+            if bruto:
+                rel["bruto"] = json.dumps(blocos, ensure_ascii=False, indent=1)[:4000]
             sessoes = _normalizar(nome, blocos)
         except requests.RequestException as e:
             resp = getattr(e, "response", None)
@@ -55,6 +59,7 @@ def coletar(cfg: dict, progresso=None) -> list:
             sessoes=len(sessoes),
             salas=len({s["sala"] for s in sessoes if s["sala"]}),
             filmes=sorted({s["titulo"] for s in sessoes if s["titulo"]}),
+            pares=sorted({(s["titulo"], s.get("titulo_original", "")) for s in sessoes if s["titulo"]}),
             de=datas[0][:10] if datas else "",
             ate=datas[-1][:10] if datas else "",
         )

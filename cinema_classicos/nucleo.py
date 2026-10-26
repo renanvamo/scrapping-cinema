@@ -118,13 +118,25 @@ def testar(log=print):
     cfg = carregar_config()
     matcher = Matcher(carregar("movies.json"), cfg.get("match_threshold", 0.88))
     relatorios = []
+    classicos = {}  # titulo da lista -> set de cinemas
 
     def prog(rel):
         relatorios.append(rel)
         log(_linha_cinema(rel))
+        if not rel["ok"] or not rel["filmes"]:
+            return
+        log("   filmes: " + "; ".join(rel["filmes"]))
+        for titulo, original in rel.get("pares", []):
+            m = (matcher.match(titulo) if titulo else None) or (matcher.match(original) if original else None)
+            if m:
+                classicos.setdefault(m[0], set()).add(rel["cinema"])
+                log(f"   ★ clássico: \"{titulo}\" → {m[0]} (similaridade {m[1]:.2f})")
 
-    log("Testando a busca em cada cinema (sem enviar aviso nem salvar nada)…")
-    sessoes = ingresso.coletar(cfg["ingresso"], progresso=prog)
+    city = cfg["ingresso"]["city_id"]
+    log(f"Fonte: Ingresso.com (api-content.ingresso.com), cidade {city}, {len(carregar('movies.json'))} filmes na sua lista.")
+    log("Testando cada cinema (sem enviar aviso nem salvar nada)…")
+    log("")
+    sessoes = ingresso.coletar(cfg["ingresso"], progresso=prog, bruto=True)
     achados = encontrar(sessoes, matcher)
     por_cinema = {}
     for s in achados:
@@ -132,6 +144,13 @@ def testar(log=print):
     for r in relatorios:
         r["classicos"] = por_cinema.get(r["cinema"], 0)
     ok = sum(1 for r in relatorios if r["ok"] and r["sessoes"])
-    log(f"Resumo: {len(relatorios)} cinemas, {ok} com sessões, {len(relatorios) - ok} sem. "
-        f"{len(sessoes)} sessões no total, {len(achados)} de clássicos.")
+    log("")
+    log(f"RESUMO: {len(relatorios)} cinemas consultados, {ok} com sessões, {len(relatorios) - ok} sem.")
+    log(f"{len(sessoes)} sessões no total, {len(achados)} de filmes da sua lista.")
+    if classicos:
+        log("Clássicos em cartaz agora:")
+        for titulo in sorted(classicos):
+            log(f"  • {titulo} — {', '.join(sorted(classicos[titulo]))}")
+    else:
+        log("Nenhum filme da sua lista em cartaz neste momento.")
     return {"cinemas": relatorios, "sessoes": len(sessoes), "achados": len(achados)}

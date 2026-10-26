@@ -4,7 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from cinema_classicos.matcher import Matcher
-from cinema_classicos.__main__ import encontrar, agrupar_msg
+from cinema_classicos.nucleo import encontrar, agrupar_msg
 from cinema_classicos.ingresso import _normalizar
 
 movies = json.loads((Path(__file__).resolve().parent.parent / "movies.json").read_text(encoding="utf-8"))
