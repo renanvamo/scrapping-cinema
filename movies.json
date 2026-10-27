@@ -195,13 +195,6 @@
     ]
   },
   {
-    "titulo": "Indiana Jones e os Caçadores da Arca Perdida",
-    "aliases": [
-      "Raiders of the Lost Ark",
-      "Indiana Jones"
-    ]
-  },
-  {
     "titulo": "Os Caça-Fantasmas",
     "aliases": [
       "Ghostbusters"
@@ -244,45 +237,9 @@
     ]
   },
   {
-    "titulo": "Esqueceram de Mim",
-    "aliases": [
-      "Home Alone"
-    ]
-  },
-  {
-    "titulo": "Monstros S.A.",
-    "aliases": [
-      "Monsters Inc"
-    ]
-  },
-  {
-    "titulo": "Procurando Nemo",
-    "aliases": [
-      "Finding Nemo"
-    ]
-  },
-  {
     "titulo": "O Sexto Sentido",
     "aliases": [
       "The Sixth Sense"
-    ]
-  },
-  {
-    "titulo": "Ace Ventura: Um Detetive Diferente",
-    "aliases": [
-      "Ace Ventura Pet Detective"
-    ]
-  },
-  {
-    "titulo": "A Máscara",
-    "aliases": [
-      "The Mask"
-    ]
-  },
-  {
-    "titulo": "MIB - Homens de Preto",
-    "aliases": [
-      "Men in Black"
     ]
   },
   {
