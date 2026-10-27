@@ -1,10 +1,12 @@
 """Lógica principal, usada pela linha de comando e pelo servidor local."""
 import json
 import os
+from collections import Counter
+from datetime import datetime, timezone
 from pathlib import Path
 
 from . import ingresso, notify, pagina
-from .matcher import Matcher
+from .matcher import Matcher, normalize
 from .state import State
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -36,6 +38,69 @@ def carregar_config():
 
 def na_nuvem():
     return os.environ.get("GITHUB_ACTIONS") == "true"
+
+
+def validar_filmes(lista):
+    """Valida e limpa a lista de filmes vinda da página. Levanta ValueError se estiver errada."""
+    if not isinstance(lista, list) or len(lista) > 500:
+        raise ValueError("lista inválida")
+    saida, vistos = [], set()
+    for f in lista:
+        if not isinstance(f, dict):
+            raise ValueError("item inválido")
+        titulo = str(f.get("titulo", "")).strip()
+        if not titulo or len(titulo) > 200:
+            raise ValueError(f"título inválido: {titulo[:30]!r}")
+        apelidos = [str(a).strip() for a in f.get("aliases", []) if str(a).strip()]
+        if len(apelidos) > 20 or any(len(a) > 200 for a in apelidos):
+            raise ValueError(f"apelidos inválidos em {titulo[:30]!r}")
+        chave = normalize(titulo)
+        if chave in vistos:
+            continue
+        vistos.add(chave)
+        saida.append({"titulo": titulo, "aliases": apelidos})
+    return saida
+
+
+def salvar_filmes(lista):
+    saida = validar_filmes(lista)
+    tmp = ROOT / "movies.json.tmp"
+    tmp.write_text(json.dumps(saida, ensure_ascii=False, indent=2), encoding="utf-8")
+    tmp.replace(ROOT / "movies.json")
+    return saida
+
+
+def resumo_em_cartaz(sessoes, matcher):
+    """Agrupa TUDO que a fonte devolveu por filme (nomes parecidos viram um só)."""
+    grupos = {}
+    for s in sessoes:
+        titulo = s.get("titulo") or s.get("titulo_original") or ""
+        if not titulo:
+            continue
+        g = grupos.setdefault(normalize(titulo) or titulo.lower(),
+                              {"nomes": Counter(), "orig": Counter(), "cinemas": Counter(), "datas": []})
+        g["nomes"][titulo] += 1
+        if s.get("titulo_original"):
+            g["orig"][s["titulo_original"]] += 1
+        g["cinemas"][s["cinema"]] += 1
+        if s.get("inicio"):
+            g["datas"].append(s["inicio"][:10])
+    saida = []
+    for g in grupos.values():
+        nome = g["nomes"].most_common(1)[0][0]
+        orig = g["orig"].most_common(1)[0][0] if g["orig"] else ""
+        m = matcher.match(nome) or (matcher.match(orig) if orig else None)
+        saida.append({
+            "titulo": nome,
+            "original": orig if orig.lower() != nome.lower() else "",
+            "cinemas": [[c, n] for c, n in g["cinemas"].most_common()],
+            "sessoes": sum(g["cinemas"].values()),
+            "de": min(g["datas"]) if g["datas"] else "",
+            "ate": max(g["datas"]) if g["datas"] else "",
+            "classico": m[0] if m else "",
+        })
+    saida.sort(key=lambda x: normalize(x["titulo"]))
+    return saida
 
 
 def encontrar(sessoes, matcher):
@@ -82,11 +147,12 @@ def buscar(log=print, dry_run=False):
         # Fonte fora do ar ou bloqueada: não apaga a página nem o histórico.
         raise RuntimeError("nenhuma sessão coletada (fonte indisponível ou bloqueando o acesso). Página mantida.")
     achados = encontrar(sessoes, matcher)
-    pagina.gerar(achados, ROOT / "pagina.html")
-    log("Página atualizada: pagina.html")
+    todos = resumo_em_cartaz(sessoes, matcher)
+    pagina.gerar(achados, ROOT / "pagina.html", todos)
+    log(f"Página atualizada: pagina.html ({len(todos)} filmes em cartaz no total)")
     if na_nuvem():
         (ROOT / "docs").mkdir(exist_ok=True)
-        pagina.gerar(achados, ROOT / "docs" / "index.html")
+        pagina.gerar(achados, ROOT / "docs" / "index.html", todos)
     estado = State(ROOT / "dados" / "estado_nuvem.json" if na_nuvem() else ROOT / "estado.json")
     novos = [s for s in achados if estado.novo(s)]
     log(f"{len(achados)} sessões de clássicos, {len(novos)} novas")
@@ -114,7 +180,33 @@ def buscar(log=print, dry_run=False):
 
 
 def testar(log=print):
-    """Diagnóstico: mostra o que a fonte devolve por cinema. Não avisa nem grava nada."""
+    """Diagnóstico por cinema. Não avisa nem grava estado.
+
+    Na nuvem (GitHub Actions) também salva o log em docs/teste.json, que a página lê e
+    mostra na tela (mesmo se a coleta falhar, o erro vai junto)."""
+    linhas, erro, resultado = [], "", None
+
+    def log2(msg):
+        linhas.append(str(msg))
+        log(msg)
+
+    try:
+        resultado = _testar(log2)
+    except Exception as e:
+        erro = str(e)
+        log2(f"ERRO: {e}")
+        if not na_nuvem():
+            raise
+    if na_nuvem():
+        (ROOT / "docs").mkdir(exist_ok=True)
+        (ROOT / "docs" / "teste.json").write_text(json.dumps({
+            "gerado": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "linhas": linhas, "resultado": resultado, "erro": erro,
+        }, ensure_ascii=False), encoding="utf-8")
+    return resultado
+
+
+def _testar(log):
     cfg = carregar_config()
     matcher = Matcher(carregar("movies.json"), cfg.get("match_threshold", 0.88))
     relatorios = []

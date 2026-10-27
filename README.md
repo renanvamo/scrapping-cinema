@@ -42,7 +42,26 @@ Página: https://renanvamo.github.io/scrapping-cinema/
 Para voltar: o mesmo caminho, **Enable workflow**. A página continua no ar com a última busca.
 Para apagar tudo: Settings → *Delete this repository*.
 
+### Ver tudo o que está em cartaz
+O botão **🎬 Tudo em cartaz (N)** abre um modal com todos os filmes que a última busca retornou (não só os seus clássicos),
+agrupados por filme, com cinemas, número de sessões e período. Dá para buscar, ordenar (A–Z, mais cinemas, mais sessões)
+e filtrar "só da minha lista ★". Fecha com ✕, com Esc ou clicando fora. Os dados vêm da última busca (botão
+**Buscar agora** ou execução agendada).
+
+### Editar a lista de filmes
+Na página (nuvem ou `abrir.bat`), clique em **🎞️ Minha lista**: dá para filtrar, remover (🗑) e adicionar filmes
+com outros nomes (título em inglês, etc.) e então **Salvar alterações**. A nova lista vale a partir da próxima busca.
+- No PC, grava direto no `movies.json`.
+- Na nuvem, grava no repositório (um commit "Atualiza lista de filmes") e exige que o token tenha também
+  **Contents: Read and write**. Para um token já criado: github.com/settings/personal-access-tokens → abrir o token →
+  Edit → Repository permissions → Contents = Read and write → Update (o valor do token não muda).
+- Alterações feitas no PC só chegam à nuvem depois de `git push`; as feitas na nuvem chegam ao PC com `git pull`.
+
 ### Bom saber
+- O botão **🧪 Testar busca** da página mostra o log completo (cada cinema, filmes, clássicos achados, resposta crua)
+  na própria página. O teste salva o resultado em `docs/teste.json` e a página lê esse arquivo.
+  Isso exige que o último passo do `buscar.yml` ("Publicar página") **não** tenha a linha
+  `if: ${{ github.event.inputs.modo != 'testar' }}`.
 - O GitHub pode atrasar tarefas agendadas em alguns minutos, e desativa agendamentos de repositórios sem atividade
   por 60 dias. Se parar de rodar, reative em Actions.
 - Se uma busca falhar (fonte fora do ar/bloqueada), a execução aparece em vermelho, o GitHub avisa por e-mail,

@@ -59,6 +59,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(200, arq.read_bytes(), "text/html; charset=utf-8")
         if self.path == "/api/status":
             return self._send(200, _job)
+        if self.path == "/api/filmes":
+            return self._send(200, nucleo.carregar("movies.json"))
         self._send(404, {"erro": "não encontrado"})
 
     def do_POST(self):
@@ -68,6 +70,15 @@ class Handler(BaseHTTPRequestHandler):
         if self.path in ("/api/buscar", "/api/testar"):
             ok = _iniciar(self.path.rsplit("/", 1)[1])
             return self._send(200 if ok else 409, {"iniciado": ok})
+        if self.path == "/api/filmes":
+            try:
+                n = int(self.headers.get("Content-Length", "0"))
+                if n > 500_000:
+                    raise ValueError("corpo grande demais")
+                salvo = nucleo.salvar_filmes(json.loads(self.rfile.read(n).decode("utf-8")))
+                return self._send(200, {"salvo": True, "total": len(salvo)})
+            except (ValueError, json.JSONDecodeError) as e:
+                return self._send(400, {"erro": str(e)})
         self._send(404, {"erro": "não encontrado"})
 
 
