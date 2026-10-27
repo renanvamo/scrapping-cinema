@@ -89,43 +89,6 @@
     ]
   },
   {
-    "titulo": "Star Wars: Episódio I - A Ameaça Fantasma",
-    "aliases": [
-      "Star Wars Episode I The Phantom Menace"
-    ]
-  },
-  {
-    "titulo": "Star Wars: Episódio II - Ataque dos Clones",
-    "aliases": [
-      "Star Wars Episode II Attack of the Clones"
-    ]
-  },
-  {
-    "titulo": "Star Wars: Episódio III - A Vingança dos Sith",
-    "aliases": [
-      "Star Wars Episode III Revenge of the Sith"
-    ]
-  },
-  {
-    "titulo": "Star Wars: Episódio IV - Uma Nova Esperança",
-    "aliases": [
-      "Star Wars A New Hope",
-      "Guerra nas Estrelas"
-    ]
-  },
-  {
-    "titulo": "Star Wars: Episódio V - O Império Contra-Ataca",
-    "aliases": [
-      "The Empire Strikes Back"
-    ]
-  },
-  {
-    "titulo": "Star Wars: Episódio VI - O Retorno de Jedi",
-    "aliases": [
-      "Return of the Jedi"
-    ]
-  },
-  {
     "titulo": "Jurassic Park - O Parque dos Dinossauros",
     "aliases": [
       "Jurassic Park",
@@ -164,28 +127,6 @@
     "titulo": "O Rei Leão",
     "aliases": [
       "The Lion King"
-    ]
-  },
-  {
-    "titulo": "Toy Story - Um Mundo de Aventuras",
-    "aliases": [
-      "Toy Story"
-    ]
-  },
-  {
-    "titulo": "Shrek",
-    "aliases": []
-  },
-  {
-    "titulo": "Piratas do Caribe: A Maldição do Pérola Negra",
-    "aliases": [
-      "Pirates of the Caribbean The Curse of the Black Pearl"
-    ]
-  },
-  {
-    "titulo": "Homem-Aranha 2",
-    "aliases": [
-      "Spider-Man 2"
     ]
   },
   {
